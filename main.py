@@ -4,12 +4,9 @@ import requests
 from pydantic import BaseModel
 # import base64
 
-class Pickle(BaseModel):
-    imagem: str
-
 app = FastAPI()
 
-API_ENDPOINT = "http://127.0.0.1:8000/teste"
+API_ENDPOINT = "http://127.0.0.1:8000/api/encondings"
 
 @app.get("/")
 def home():
@@ -20,8 +17,5 @@ def home():
     pastebin_url = requisicao.text
     print(pastebin_url)
 
-    return {"Hello": "World"}
+    return {"Encondings enviados"}
 
-@app.post("/teste")
-async def teste(pickle: Pickle):
-    return {pickle.imagem}
