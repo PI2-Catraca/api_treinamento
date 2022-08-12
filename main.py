@@ -14,7 +14,7 @@ app = FastAPI()
 API_ENDPOINT = "http://127.0.0.1:9000/api/encondings"
 
 def conecta_db():
-  con = psycopg2.connect(host='localhost', database='catraca',user='postgres', password='1230,123')
+  con = psycopg2.connect(host='localhost', port = '15432', database='db_catraca',user='postgres', password='password')
   return con
 
 def consultar_db(sql, parametro):
@@ -43,7 +43,7 @@ class Usuario(BaseModel):
 
 @app.get("/")
 async def home(usuario: Usuario):
-    fotos = consultar_db('select * from foto where usuario_cpf = %s', (usuario.cpf,))
+    fotos = consultar_db('select * from tb_foto where usuario_cpf = %s', (usuario.cpf,))
     try:
         dir = './dataset/{nomeUsuario}'.format(nomeUsuario = usuario.nome)
         os.mkdir(dir)
@@ -51,9 +51,11 @@ async def home(usuario: Usuario):
         print("Diretório já existente.")
 
     for f in fotos:
-        id, cpf, ft, tipoFoto = f
+        id, cpf, ft = f
+        ft_byte = bytes(ft, 'utf-8')
         foto = open("./dataset/{nomeUsuario}/{idFoto}.jpg".format(nomeUsuario = usuario.nome, idFoto = id), "wb")
-        foto.write(base64.urlsafe_b64decode(bytes(ft)))
+        foto.write(base64.urlsafe_b64decode(bytes(ft_byte)))
+
 
     await treinador.iniciarTreinamento()
 
