@@ -8,10 +8,29 @@ import numpy as np
 import psycopg2
 import base64
 import os
+import os
+from google.cloud import storage
+
+# API_ENDPOINT = "http://127.0.0.1:9000/api/encondings"
 
 app = FastAPI()
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'aerial-velocity-359918-e385a21f34a1.json'
+storage_client = storage.Client()
 
-API_ENDPOINT = "http://127.0.0.1:9000/api/encondings"
+class Usuario(BaseModel):
+    nome: str
+    cpf: str
+
+def upload_pickle(blob_name, file_path, bucket_name):
+    try:
+        bucket = storage_client.get_bucket(bucket_name)
+        blob = bucket.blob(blob_name)
+        blob.upload_from_filename(file_path)
+        print('true')
+        return True
+    except Exception as e:
+        print(e)
+        return False
 
 def conecta_db():
   con = psycopg2.connect(host='localhost', port = '15432', database='db_catraca',user='postgres', password='password')
@@ -36,11 +55,6 @@ def default(obj):
             return obj.item()
     raise TypeError('Unknown type:', type(obj))
 
-
-class Usuario(BaseModel):
-    nome: str
-    cpf: str
-
 @app.get("/")
 async def home(usuario: Usuario):
     fotos = consultar_db('select * from tb_foto where usuario_cpf = %s', (usuario.cpf,))
@@ -59,14 +73,7 @@ async def home(usuario: Usuario):
 
     await treinador.iniciarTreinamento()
 
-    with open("encodings.pickle", "rb") as p:
-        arquivoPickle = pickle.load(p)
-    
-    jsonPickle = js.dumps(arquivoPickle, default = default)
-
-    data = jsonPickle
-    requisicao = requests.post(url = API_ENDPOINT, data = data)
-    pastebin_url = requisicao.text
-    print(pastebin_url)
+    file_path = r'/home/kalebe/Desktop/treinador'
+    upload_pickle('encodings.pickle', os.path.join(file_path, 'encodings.pickle'), 'pi2-catraca')
 
     return {"Encondings enviados"}
