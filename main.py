@@ -9,6 +9,8 @@ import psycopg2
 import base64
 import os
 import os
+
+from shutil import make_archive
 from google.cloud import storage
 
 # API_ENDPOINT = "http://127.0.0.1:9000/api/encondings"
@@ -76,8 +78,9 @@ async def home(usuario: Usuario):
 
         #verifico se o tipo da foto é igual = b (biometria)
         if tipo == 'b' :
-            bio = open("./biometria/{nomeUsuario}/{cpfUsuario}.date".format(nomeUsuario = usuario.nome, cpfUsuario = cpfUsuario), "wb")
+            bio = open("./biometria/{nomeUsuario}/{cpfUsuario}.dat".format(nomeUsuario = usuario.nome, cpfUsuario = cpfUsuario), "wb")
             bio.write(base64.urlsafe_b64decode(bytes(ft_byte)))
+            make_archive('biometria', 'zip', 'biometria')
             continue
 
         foto = open("./dataset/{nomeUsuario}/{idFoto}.jpg".format(nomeUsuario = usuario.nome, idFoto = idFoto), "wb")
@@ -87,6 +90,6 @@ async def home(usuario: Usuario):
 
     file_path = r'/home/others/Desktop/api_treinamento'
     upload_pickle('encodings.pickle', os.path.join(file_path, 'encodings.pickle'), 'pi2-catraca')
-    upload_pickle('biometria', os.path.join(file_path, 'biometria'), 'pi2-catraca')
+    upload_pickle('biometria', os.path.join(file_path, 'biometria.zip'), 'pi2-catraca')
 
     return {"Encondings enviados"}
