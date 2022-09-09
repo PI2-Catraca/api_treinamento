@@ -57,12 +57,18 @@ def default(obj):
 
 @app.get("/")
 async def home(usuario: Usuario):
-    fotos = consultar_db('select * from tb_foto where usuario_cpf = %s and tipo = %s', (usuario.cpf, 'f',))
+    fotos = consultar_db('select * from tb_foto where usuario_cpf = %s', (usuario.cpf,))
     try:
         dir = './dataset/{nomeUsuario}'.format(nomeUsuario = usuario.nome)
         os.mkdir(dir)
     except OSError:
-        print("Diretório já existente.")
+        print("Diretório dataset já existente.")
+
+    try:
+        dir = './biometria/{nomeUsuario}'.format(nomeUsuario = usuario.nome)
+        os.mkdir(dir)
+    except OSError:
+        print("Diretório biometria já existente.")
 
     for f in fotos:
         idFoto, cpfUsuario, ft, tipo = f
@@ -72,6 +78,7 @@ async def home(usuario: Usuario):
         if tipo == 'b' :
             bio = open("./biometria/{nomeUsuario}/{cpfUsuario}.date".format(nomeUsuario = usuario.nome, cpfUsuario = cpfUsuario), "wb")
             bio.write(base64.urlsafe_b64decode(bytes(ft_byte)))
+            continue
 
         foto = open("./dataset/{nomeUsuario}/{idFoto}.jpg".format(nomeUsuario = usuario.nome, idFoto = idFoto), "wb")
         foto.write(base64.urlsafe_b64decode(bytes(ft_byte)))
