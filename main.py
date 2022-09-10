@@ -1,19 +1,11 @@
 from fastapi import FastAPI
 import treinador
-import requests
 from pydantic import BaseModel
-import json as js
-import pickle
-import numpy as np
 import psycopg2
 import base64
-import os
-import os
-
-from shutil import make_archive
+import os 
+from xml.etree.ElementTree import Element, SubElement, ElementTree
 from google.cloud import storage
-
-# API_ENDPOINT = "http://127.0.0.1:9000/api/encondings"
 
 app = FastAPI()
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'aerial-velocity-359918-e385a21f34a1.json'
@@ -49,14 +41,6 @@ def consultar_db(sql, parametro):
   con.close()
   return registros
 
-def default(obj):
-    if type(obj).__module__ == np.__name__:
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        else:
-            return obj.item()
-    raise TypeError('Unknown type:', type(obj))
-
 @app.get("/")
 async def home(usuario: Usuario):
     fotos = consultar_db('select * from tb_foto where usuario_cpf = %s', (usuario.cpf,))
@@ -67,29 +51,34 @@ async def home(usuario: Usuario):
         print("Diretório dataset já existente.")
 
     try:
-        dir = './biometria/{nomeUsuario}'.format(nomeUsuario = usuario.nome)
+        dir = './biometria'
         os.mkdir(dir)
     except OSError:
         print("Diretório biometria já existente.")
 
+    cpfUsuario = ''
     for f in fotos:
         idFoto, cpfUsuario, ft, tipo = f
         ft_byte = bytes(ft, 'utf-8')
-
+        
         #verifico se o tipo da foto é igual = b (biometria)
         if tipo == 'b' :
-            bio = open("./biometria/{nomeUsuario}/{cpfUsuario}.dat".format(nomeUsuario = usuario.nome, cpfUsuario = cpfUsuario), "wb")
+            bio = open("./biometria/{cpfUsuario}.dat".format(nomeUsuario = usuario.nome, cpfUsuario = cpfUsuario), "wb")
             bio.write(base64.urlsafe_b64decode(bytes(ft_byte)))
-            make_archive('biometria', 'zip', 'biometria')
+            bio.close()
+            cpfUsuario = cpfUsuario
             continue
 
         foto = open("./dataset/{nomeUsuario}/{idFoto}.jpg".format(nomeUsuario = usuario.nome, idFoto = idFoto), "wb")
         foto.write(base64.urlsafe_b64decode(bytes(ft_byte)))
+        foto.close()
 
     await treinador.iniciarTreinamento()
-
+    
     file_path = r'/home/others/Desktop/api_treinamento'
-    upload_pickle('encodings.pickle', os.path.join(file_path, 'encodings.pickle'), 'pi2-catraca')
-    upload_pickle('biometria', os.path.join(file_path, 'biometria.zip'), 'pi2-catraca')
+    file_path_biometria = r'/home/others/Desktop/api_treinamento/biometria'
+
+    upload_pickle('encodings', os.path.join(file_path, 'encodings.pickle'), 'pi2-catraca')
+    upload_pickle(cpfUsuario, os.path.join(file_path_biometria, './{cpfUsuario}.dat').format(cpfUsuario = cpfUsuario), 'biometria-pi2')
 
     return {"Encondings enviados"}
