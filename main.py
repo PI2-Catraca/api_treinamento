@@ -78,7 +78,7 @@ async def home(usuario: Usuario):
     file_path = r'/home/others/Desktop/api_treinamento'
     file_path_biometria = r'/home/others/Desktop/api_treinamento/biometria'
 
-    upload_pickle('encodings', os.path.join(file_path, 'encodings.pickle'), 'pi2-catraca')
-    upload_pickle(cpfUsuario, os.path.join(file_path_biometria, './{cpfUsuario}.dat').format(cpfUsuario = cpfUsuario), 'biometria-pi2')
+    upload_pickle('encodings.pickle', os.path.join(file_path, 'encodings.pickle'), 'pi2-catraca')
+    upload_pickle(('{cpfUsuario}.dat').format(cpfUsuario = cpfUsuario), os.path.join(file_path_biometria, './{cpfUsuario}.dat').format(cpfUsuario = cpfUsuario), 'biometria-pi2')
 
     return {"Encondings enviados"}
