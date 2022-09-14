@@ -32,3 +32,4 @@ async def iniciarTreinamento():
   f.write(pickle.dumps(data))
   f.close()
   print("[INFO] finish")
+

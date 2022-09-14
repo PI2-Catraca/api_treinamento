@@ -45,7 +45,7 @@ def consultar_db(sql, parametro):
 async def home(usuario: Usuario):
     fotos = consultar_db('select * from tb_foto where usuario_cpf = %s', (usuario.cpf,))
     try:
-        dir = './dataset/{nomeUsuario}'.format(nomeUsuario = usuario.nome)
+        dir = './dataset/{cpfUsuario}'.format(cpfUsuario = usuario.cpf)
         os.mkdir(dir)
     except OSError:
         print("Diretório dataset já existente.")
