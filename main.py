@@ -27,7 +27,7 @@ def upload_pickle(blob_name, file_path, bucket_name):
         return False
 
 def conecta_db():
-  con = psycopg2.connect(host='localhost', port = '15432', database='db_catraca',user='postgres', password='password')
+  con = psycopg2.connect(host='localhost', port = '15432', user='postgres', password='password')
   return con
 
 def consultar_db(sql, parametro):
@@ -69,14 +69,14 @@ async def home(usuario: Usuario):
             cpfUsuario = cpfUsuario
             continue
 
-        foto = open("./dataset/{nomeUsuario}/{idFoto}.jpg".format(nomeUsuario = usuario.nome, idFoto = idFoto), "wb")
+        foto = open("./dataset/{cpfUsuario}/{idFoto}.jpg".format(cpfUsuario = usuario.cpf, idFoto = idFoto), "wb")
         foto.write(base64.urlsafe_b64decode(bytes(ft_byte)))
         foto.close()
 
     await treinador.iniciarTreinamento()
     
-    file_path = r'/home/others/Desktop/api_treinamento'
-    file_path_biometria = r'/home/others/Desktop/api_treinamento/biometria'
+    file_path = r'C:\\git\\PI2-Catraca\\api_treinamento'
+    file_path_biometria = r'C:\\git\\PI2-Catraca\\api_treinamento\biometria'
 
     upload_pickle('encodings.pickle', os.path.join(file_path, 'encodings.pickle'), 'pi2-catraca')
     upload_pickle(('{cpfUsuario}.dat').format(cpfUsuario = cpfUsuario), os.path.join(file_path_biometria, './{cpfUsuario}.dat').format(cpfUsuario = cpfUsuario), 'biometria-pi2')
